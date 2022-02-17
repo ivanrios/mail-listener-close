@@ -21,6 +21,7 @@ JavaScript Code:
 var MailListener = require("mail-listener-close");
 
 var mailListener = new MailListener({
+  closeAtEnd : true,
   username: "imap-username",
   password: "imap-password",
   host: "imap-host",
