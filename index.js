@@ -150,5 +150,9 @@ function parseUnread() {
         }
       });
     }
+    else{
+      if (self.closeAtEnd) 
+        self.imap.end();
+    }
   });
 }
