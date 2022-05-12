@@ -85,9 +85,19 @@ function imapMail() {
 function parseUnread() {
   var self = this;
   this.imap.search(self.searchFilter, function(err, results) {
+    var emailCount = 0;
+    var validateEnd = function () {
+      if (self.closeAtEnd) {
+        emailCount++;
+        if (emailCount >= results.length)
+          self.imap.end();
+      }
+    }
     if (err) {
       self.emit('error', err);
     } else if (results.length > 0) {
+      this.emit('resultCount',results.length);
+      
       async.each(results, function( result, callback) {
         var f = self.imap.fetch(result, {
           bodies: '',
@@ -114,10 +124,12 @@ function parseUnread() {
                 });
               }, function(err){
                 self.emit('mail', mail, seqno, attributes);
+                validateEnd()
                 callback()
               });
             } else {
               self.emit('mail',mail,seqno,attributes);
+              validateEnd()
             }
           });
           parser.on("attachment", function (attachment) {
@@ -139,11 +151,6 @@ function parseUnread() {
         f.once('error', function(err) {
           self.emit('error', err);
         });
-        if (self.closeAtEnd) {
-          f.once('end', function () {
-            self.imap.end();
-          });
-        }        
       }, function(err){
         if( err ) {
           self.emit('error', err);
@@ -151,8 +158,7 @@ function parseUnread() {
       });
     }
     else{
-      if (self.closeAtEnd) 
-        self.imap.end();
+      validateEnd()
     }
   });
 }
